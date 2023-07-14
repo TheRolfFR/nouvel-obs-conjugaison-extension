@@ -1,28 +1,37 @@
 {
-  "name": "REPLACEME",
-  "version": "1.0.0",
-  "description": "",
+  "name": "nouvel-obs-conjugaison-extension",
+  "version": "0.0.1",
+  "description": "Unofficial `L'Obs - La conjugaison` browser extension",
   "main": "background.js",
   "scripts": {
     "format": "prettier --write .",
     "build": "node scripts/build.js",
+    "watch:build": "nodemon --watch src --watch public --watch images --ext js,ts,json,svelte --exec \"pnpm run build\"",
+    "start:firefox": "web-ext run --watch-ignored src/** --devtools --firefox-profile ../firefox-profile --profile-create-if-missing --keep-profile-changes",
+    "dev:firefox": "concurrently --kill-others \"npm:start:firefox\" \"npm:watch:build\"",
     "build:prod": "node scripts/prod-build.js",
     "build:chrome": "node scripts/package-extension.js",
     "build:firefox": "node scripts/firefox-build.js"
   },
   "keywords": [],
-  "author": "REPLACEME",
+  "author": "TheRolf",
   "license": "MIT",
   "devDependencies": {
     "@tsconfig/svelte": "^5.0.0",
+    "@types/dom-parser": "^0.1.1",
+    "@types/dompurify": "^3.0.2",
     "@types/webextension-polyfill": "^0.10.0",
+    "concurrently": "^8.2.0",
     "esbuild": "^0.18.11",
     "esbuild-svelte": "^0.7.4",
     "fs-extra": "^11.1.1",
+    "nodemon": "^3.0.1",
     "prettier": "^2.8.4",
     "prettier-plugin-svelte": "^2.10.1",
+    "sass": "^1.63.6",
     "svelte-preprocess": "^5.0.4",
     "typescript": "^5.1.6",
+    "web-ext": "^7.6.2",
     "zip-local": "^0.3.5"
   },
   "prettier": {
@@ -34,6 +43,8 @@
   },
   "dependencies": {
     "detect-browser": "^5.3.0",
+    "dom-parser": "^0.1.6",
+    "dompurify": "^3.0.5",
     "svelte": "^4.0.5",
     "webextension-polyfill": "^0.10.0"
   }

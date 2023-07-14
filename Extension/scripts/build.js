@@ -7,6 +7,9 @@ const isProdBuild = process.argv.includes('--prod');
 main();
 
 async function main() {
+  /**
+   * @type {import('esbuild').BuildOptions}
+   */
   const commonConfig = {
     outbase: './src',
     platform: 'browser',

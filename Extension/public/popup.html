@@ -2,21 +2,25 @@
 <html>
   <head>
     <meta charset="UTF-8" />
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <title>L'OBS - La conjugaison</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script type="module" src="../dist/popup.js"></script>
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css"
-    />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/light.css">
     <link rel="stylesheet" href="../dist/popup.css" />
+
+    <link rel="preload" as="image" href="https://la-conjugaison.nouvelobs.com/img/coin_jaune.png">
+    <link rel="preload" as="image" href="https://la-conjugaison.nouvelobs.com/img/verbe/fondmode.png">
+    <link rel="preload" as="image" href="https://la-conjugaison.nouvelobs.com/img/verbe/fondtemps.png">
+    <link rel="preload" as="image" href="https://la-conjugaison.nouvelobs.com/img/verbe/fondcorps.png">
   </head>
   <body>
     <main id="root"></main>
   </body>
   <style>
-    html {
-      min-width: 20em;
-      min-height: 30em;
+    html, body {
+      width: 633px;
+      height: 473px;
     }
   </style>
 </html>
