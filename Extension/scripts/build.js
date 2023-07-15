@@ -40,9 +40,10 @@ async function main() {
     mainFields: ['svelte', 'module', 'main', 'browser'],
     plugins: [
       sveltePlugin({
-        preprocess: sveltePreprocess()
-      })
-    ]
+        preprocess: sveltePreprocess(),
+        filterWarnings: (warning) => !warning.message.includes('ARIA role')
+      }),
+    ],
   });
 
   const settingsJob = build({

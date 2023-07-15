@@ -1,86 +1,27 @@
 <script lang="ts">
-  import DOMPurify from 'dompurify';
-  import conjugaison from './conjugaison';
-  import { afterUpdate } from 'svelte';
-
-  type Unwrapped<Type> = Type extends Promise<infer WrappedType>
-    ? WrappedType
-    : Type;
+  import DOMPurify from 'dompurify'
+  import { afterUpdate } from 'svelte'
+  import { BasicVerbs, searchStore } from './stores/searchStore'
+  import SearchInput from './searchInput.svelte'
 
   afterUpdate(() => {
     window.dispatchEvent(new Event('resize'))
   })
 
-  const purify = DOMPurify(window);
+  const purify = DOMPurify(window)
 
-  let results: Unwrapped<ReturnType<typeof conjugaison>> | undefined =
-    undefined;
-  let loading: boolean = false;
-  function launchRequest(word: string) {
-    if (loading) return
+  $: ({ loading, results } = $searchStore)
 
-    loading = true;
-    conjugaison(word)
-      .then(v => {
-        results = v
-      })
-      .finally(() => {
-        loading = false
-      });
-  }
-
-  let search = ''
+  let inputValue = ''
   function handleOnSubmit() {
-    launchRequest(search)
+    searchStore.startSearch(inputValue)
   }
-
-  let verbs = [
-    'jouer',
-    'faire',
-    'devoir',
-    'savoir',
-    'lire',
-    'mettre',
-    'manger',
-    'comprendre',
-    'être',
-    'acheter',
-    'écrire',
-    'aimer',
-    'envoyer',
-    'craindre',
-    'dire',
-    'appeler',
-    'parler',
-    'pouvoir',
-    'prendre',
-    'aller',
-    'connaître',
-    'voir',
-    'répondre',
-    'finir',
-    'partir',
-    'venir',
-    'attendre',
-    'vouloir',
-    'sortir',
-    'avoir'
-  ];
-
-  // launchRequest(verbs[Math.floor(verbs.length * Math.random())])
 </script>
 
 <form id="header" on:submit|preventDefault={handleOnSubmit}>
   <img id="logo" src="./logo.svg" alt="L'OBS - La conjugaison" />
   <span id="separator" />
-  <input
-    id="search"
-    type="search"
-    name="search"
-    disabled={loading}
-    bind:value={search}
-    placeholder="Rechercher ici..."
-  />
+  <span id="search"><SearchInput bind:value={inputValue} /></span>
   <button id="submit" type="submit" value="">
     <img src="./icone-loupe.svg" alt="Rechercher" />
   </button>
@@ -91,7 +32,24 @@
     {#if loading}
       <i>Chargement...</i>
     {:else if !results}
-      Rechercher dans la barre afin de trouver des résultats
+      <p>Rechercher dans la barre afin de trouver des résultats</p>
+      <p id="basic-verbs">
+        {#each BasicVerbs.join(' | ').split(' ') as verb}
+          {#if verb === '|'}
+            {' - '}
+          {:else}
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
+            <!-- svelte-ignore a11y-no-static-element-interactions -->
+            <a
+              href="#dummy"
+              on:click|preventDefault={() => {
+                inputValue = verb
+                handleOnSubmit()
+              }}>{verb}</a
+            >
+          {/if}
+        {/each}
+      </p>
     {/if}
   </p>
 {/if}
@@ -132,7 +90,6 @@
   }
 
   #header img,
-  #header input,
   #header > span,
   #submit {
     height: 40px;

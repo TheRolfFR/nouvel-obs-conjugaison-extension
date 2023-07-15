@@ -6,7 +6,7 @@
   "scripts": {
     "format": "prettier --write .",
     "build": "node scripts/build.js",
-    "watch:build": "nodemon --watch src --watch public --watch images --ext js,ts,json,svelte --exec \"pnpm run build\"",
+    "watch:build": "nodemon --watch src --watch public --watch images --watch scripts/build.js --ext js,ts,json,svelte --exec \"pnpm run build\"",
     "start:firefox": "web-ext run --watch-ignored src/** --devtools --firefox-profile ../firefox-profile --profile-create-if-missing --keep-profile-changes",
     "dev:firefox": "concurrently --kill-others \"npm:start:firefox\" \"npm:watch:build\"",
     "build:prod": "node scripts/prod-build.js",
@@ -34,17 +34,11 @@
     "web-ext": "^7.6.2",
     "zip-local": "^0.3.5"
   },
-  "prettier": {
-    "tabWidth": 2,
-    "semi": true,
-    "singleQuote": true,
-    "trailingComma": "none",
-    "arrowParens": "avoid"
-  },
   "dependencies": {
     "detect-browser": "^5.3.0",
     "dom-parser": "^0.1.6",
     "dompurify": "^3.0.5",
+    "simple-svelte-autocomplete": "^2.5.2",
     "svelte": "^4.0.5",
     "webextension-polyfill": "^0.10.0"
   }
