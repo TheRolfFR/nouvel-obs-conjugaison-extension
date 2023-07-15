@@ -40,26 +40,47 @@
     {:else if !results}
       <p>Rechercher dans la barre afin de trouver des résultats</p>
 
-      {#each Object.entries(WordCat) as [title, verbs], i}
-        <h3>{title}</h3>
+      {#each Object.entries(WordCat) as [title, verbs], catIndex}
+        <h3>
+          {title}
+          {#if catIndex === 1 && $historyStore.length > 0}
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
+            <!-- svelte-ignore a11y-no-static-element-interactions -->
+            <span class="remove-h" on:click={() => historyStore.empty()}>
+              Vider
+            </span>
+          {/if}
+        </h3>
         <p>
-          {#each verbs.join(' | ').split(' ') as verb}
-            {#if verb === '|'}
-              {' - '}
-            {:else}
-              <!-- svelte-ignore a11y-click-events-have-key-events -->
-              <!-- svelte-ignore a11y-no-static-element-interactions -->
-              <a
-                href="#dummy"
-                on:click|preventDefault={() => {
-                  inputValue = verb
-                  handleOnSubmit()
-                }}>{verb}</a
-              >
-            {/if}
-          {/each}
-          {#if i === 1 && verbs.length === 0}
-            <i>Pas d'Historique encore</i>
+          {#if verbs.length}
+            {#each verbs.join(' | ').split(' ') as verb}
+              {@debug verb}
+              {#if verb === '|'}
+                {' - '}
+              {:else}
+                <!-- svelte-ignore a11y-click-events-have-key-events -->
+                <!-- svelte-ignore a11y-no-static-element-interactions -->
+                <a
+                  href="#dummy"
+                  on:click|preventDefault={() => {
+                    inputValue = verb
+                    handleOnSubmit()
+                  }}
+                >
+                  {verb}
+                </a>
+                {#if catIndex === 1}
+                  <!-- svelte-ignore a11y-click-events-have-key-events -->
+                  <!-- svelte-ignore a11y-no-static-element-interactions -->
+                  <span
+                    class="remove-h"
+                    on:click={() => historyStore.remove(verb)}>x</span
+                  >
+                {/if}
+              {/if}
+            {/each}
+          {:else if catIndex === 1}
+            <i>Pas encore d'historique</i>
           {/if}
         </p>
       {/each}
@@ -208,6 +229,20 @@
     tbody tr:nth-child(2n) {
       background-color: transparent !important;
     }
+  }
+
+  .remove-h {
+    background: #ccc;
+    height: 16px;
+    min-width: 16px;
+    text-align: center;
+    line-height: 10px;
+    font-size: 14px;
+    padding: 2px;
+    font-weight: normal;
+    border-radius: 3px;
+    display: inline-block;
+    cursor: pointer;
   }
 
   :global {
