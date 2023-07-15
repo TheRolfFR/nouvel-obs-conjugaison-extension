@@ -4,7 +4,7 @@
 
   "name": "L'OBS - La conjugaison",
   "description": "Extension de conjugaison utilisant L'OBS La conjugaison",
-  "version": "0.0.1",
+  "version": "0.1.0",
 
   "icons": {
     "48": "images/app_icon_48px.png",

@@ -6,6 +6,8 @@
   "scripts": {
     "format": "prettier --write .",
     "build": "node scripts/build.js",
+    "ext:build": "web-ext build --filename \"{name}-version.xpi\"  -s . -i package.json pnpm-lock.yaml ./.* *.zip web-ext-artifcats scripts src README.md tsconfig.json --no-config-discovery --overwrite-dest",
+    "ext:lint": "pnpm run build && web-ext lint -s . --no-config-discovery --self-hosted",
     "watch:build": "nodemon --watch src --watch public --watch images --watch scripts/build.js --ext js,ts,json,svelte --exec \"pnpm run build\"",
     "start:firefox": "web-ext run --watch-ignored src/** --devtools --firefox-profile ../firefox-profile --profile-create-if-missing --keep-profile-changes",
     "dev:firefox": "concurrently --kill-others \"npm:start:firefox\" \"npm:watch:build\"",
