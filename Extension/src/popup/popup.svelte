@@ -1,7 +1,7 @@
 <script lang="ts">
   import DOMPurify from 'dompurify'
   import { afterUpdate } from 'svelte'
-  import { BasicVerbs, searchStore } from './stores/searchStore'
+  import { BasicVerbs, searchStore, searchWritable } from './stores/searchStore'
   import SearchInput from './searchInput.svelte'
   import historyStore from './stores/historyStore'
 
@@ -13,9 +13,12 @@
 
   $: ({ loading, results } = $searchStore)
 
-  let inputValue = ''
   function handleOnSubmit() {
-    searchStore.startSearch(inputValue)
+    searchStore.startSearch($searchWritable)
+  }
+  function resetSearch() {
+    searchWritable.set('')
+    searchStore.resetResults()
   }
 
   $: WordCat = {
@@ -25,9 +28,17 @@
 </script>
 
 <form id="header" on:submit|preventDefault={handleOnSubmit}>
-  <img id="logo" src="./logo.svg" alt="L'OBS - La conjugaison" />
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
+  <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+  <img
+    id="logo"
+    src="./logo.svg"
+    alt="L'OBS - La conjugaison"
+    on:click={resetSearch}
+  />
   <span id="separator" />
-  <span id="search"><SearchInput bind:value={inputValue} /></span>
+  <span id="search"><SearchInput /></span>
   <button id="submit" type="submit" value="">
     <img src="./icone-loupe.svg" alt="Rechercher" />
   </button>
@@ -54,7 +65,6 @@
         <p>
           {#if verbs.length}
             {#each verbs.join(' | ').split(' ') as verb}
-              {@debug verb}
               {#if verb === '|'}
                 {' - '}
               {:else}
@@ -63,7 +73,7 @@
                 <a
                   href="#dummy"
                   on:click|preventDefault={() => {
-                    inputValue = verb
+                    $searchWritable = verb
                     handleOnSubmit()
                   }}
                 >

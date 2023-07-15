@@ -1,32 +1,44 @@
 <script lang="ts">
   //@ts-ignore all
   import AutoComplete from 'simple-svelte-autocomplete'
-  import searchStore from './stores/searchStore'
+  import { searchStore, searchWritable } from './stores/searchStore'
 
-  export let value: string = ''
+  $: showClear = !!$searchWritable
+  let container: HTMLElement | undefined
+
+  searchWritable.subscribe(v => {
+    //? fix bug where outside update would not modify input value
+    const rawInput = container?.querySelector(
+      'input.input.autocomplete-input'
+    ) as HTMLInputElement | null | undefined
+    if (rawInput) rawInput.value = v || ''
+  })
 
   function handleChange(value: string | undefined) {
-    if (value === undefined) {
+    if (!value) {
+      searchWritable.set(undefined)
       searchStore.resetResults()
-      value = ''
+    } else {
+      searchWritable.set(value)
     }
   }
 </script>
 
 <!-- svelte-ignore a11y-no-onchange -->
-<div id="input">
+<div id="input" bind:this={container}>
   <AutoComplete
     onChange={handleChange}
     showLoadingIndicator={true}
     searchFunction={searchStore.startAutocomplete}
-    bind:selectedItem={value}
+    bind:selectedItem={$searchWritable}
     hideArrow
     autofocus
     disabled={$searchStore.loading}
-    showClear={!!value}
+    {showClear}
     delay={200}
     localFiltering={false}
     placeholder="Rechercher ici..."
+    loadingText="Chargement des résultats..."
     noResultsText="Aucun resultat trouvé"
   />
 </div>

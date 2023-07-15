@@ -19,7 +19,12 @@ function createSearchStore() {
     ).then(r => r.json())
   }
 
-  function startSearch(verb: string) {
+  function startSearch(verb: string | undefined) {
+    if (verb === undefined || verb === '') {
+      update(v => ({ ...v, results: undefined }))
+      return
+    }
+
     historyStore.add(verb)
 
     update(val => {
@@ -56,6 +61,7 @@ const theStore = createSearchStore()
 
 export default theStore
 export const searchStore = theStore
+export const searchWritable = writable<string | undefined>(undefined)
 
 export const BasicVerbs = [
   'être',
