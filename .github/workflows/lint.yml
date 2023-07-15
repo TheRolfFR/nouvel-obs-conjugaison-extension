@@ -5,6 +5,10 @@ on:
       - main
   pull_request:
 
+defaults:
+  run:
+    working-directory: Extension
+
 jobs:
   lint:
     name: "Lint"

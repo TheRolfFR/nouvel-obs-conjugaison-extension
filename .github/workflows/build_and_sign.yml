@@ -6,6 +6,10 @@ on:
     tags-ignore:
       - '**'
 
+defaults:
+  run:
+    working-directory: Extension
+
 jobs:
   build:
     name: "Build"
