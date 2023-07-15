@@ -41,7 +41,8 @@ async function main() {
     plugins: [
       sveltePlugin({
         preprocess: sveltePreprocess(),
-        filterWarnings: (warning) => !warning.message.includes('ARIA role')
+        filterWarnings: (warning) => !warning.message.includes('ARIA role'),
+        compilerOptions: { dev: !isProdBuild }
       }),
     ],
   });
