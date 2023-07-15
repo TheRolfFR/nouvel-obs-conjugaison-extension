@@ -28,4 +28,4 @@ jobs:
 
       # Lint
       - name: "Lint"
-        run: "pnpm run ext:lint --verbose"
+        run: pnpm run ext:lint

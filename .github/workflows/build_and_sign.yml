@@ -3,6 +3,10 @@ on:
   push:
     branches:
       - main
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
 
 jobs:
   build:
@@ -35,7 +39,7 @@ jobs:
         shell: bash
         run: echo "sha_short=$(printf "%.7s\n" "$(head=($(<.git/HEAD)); cat .git/${head[1]})")" >> "$GITHUB_ENV"
       - name: Build
-        run: pnpm run ext:build:ci --filename "lobs_la_conjugaison-${{ env.sha_short }}.xpi" --verbose
+        run: pnpm run ext:build:ci --filename "lobs_la_conjugaison-${{ env.sha_short }}.xpi"
       - name: Get artifact name
         shell: bash
         run: |
@@ -51,22 +55,26 @@ jobs:
           name: ${{ env.artifact }}
           path: web-ext-artifacts/${{ env.target }}
           if-no-files-found: error
+          retention-days: 7
+    outputs:
+      artifact: ${{ env.artifact }}
   sign:
-    if: startswith(github.event.ref, 'refs/tags/') && ${{ !github.event.act }}
+    if: startswith(github.event.ref, 'refs/tags/v') && ${{ !github.event.act }}
     name: "Release"
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: "Checkout"
-        uses: actions/checkout@v1
+      - uses: actions/download-artifact@v2
+        with:
+          name: ${{needs.build.outputs.artifact}}
 
-      - name: "web-ext sign"
+      - name: "Sign"
         id: web-ext-sign
         uses: kewisch/action-web-ext@v1
         with:
           cmd: sign
-          source: ${{ steps.web-ext-build.outputs.target }}
-          channel: unlisted
+          source: ${{needs.build.outputs.artifact}}
+          channel: ${{ (github.event_name == 'workflow_dispatch' && 'unlisted') || 'listed' }}
           apiKey: ${{ secrets.AMO_SIGN_KEY }}
           apiSecret: ${{ secrets.AMO_SIGN_SECRET }}
           timeout: 900000
