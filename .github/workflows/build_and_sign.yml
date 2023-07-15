@@ -33,7 +33,7 @@ jobs:
         shell: bash
         run: echo "sha_short=$(printf "%.7s\n" "$(head=($(<.git/HEAD)); cat .git/${head[1]})")" >> "$GITHUB_ENV"
       - name: Build
-        run: pnpm run ext:build:ci --filename "lobs_la_conjugaison-${{ env.sha_short }}.xpi"
+        run: pnpm run ext:build:ci --filename "lobs_la_conjugaison-${{ env.sha_short }}.xpi --verbose"
       - name: Get artifact name
         shell: bash
         run: |
