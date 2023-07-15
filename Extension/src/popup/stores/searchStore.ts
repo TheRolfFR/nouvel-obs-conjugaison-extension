@@ -1,5 +1,6 @@
 import { writable } from 'svelte/store'
 import conjugaison, { proxy, type Conjugaison } from '../conjugaison'
+import historyStore from './historyStore'
 
 function createSearchStore() {
   let { subscribe, update } = writable({
@@ -19,6 +20,8 @@ function createSearchStore() {
   }
 
   function startSearch(verb: string) {
+    historyStore.add(verb)
+
     update(val => {
       const { loading, results } = val
       if (loading) return val

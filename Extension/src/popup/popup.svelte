@@ -3,6 +3,7 @@
   import { afterUpdate } from 'svelte'
   import { BasicVerbs, searchStore } from './stores/searchStore'
   import SearchInput from './searchInput.svelte'
+  import historyStore from './stores/historyStore'
 
   afterUpdate(() => {
     window.dispatchEvent(new Event('resize'))
@@ -15,6 +16,11 @@
   let inputValue = ''
   function handleOnSubmit() {
     searchStore.startSearch(inputValue)
+  }
+
+  $: WordCat = {
+    'Verbes communs': BasicVerbs,
+    Historique: $historyStore
   }
 </script>
 
@@ -33,23 +39,30 @@
       <i>Chargement...</i>
     {:else if !results}
       <p>Rechercher dans la barre afin de trouver des résultats</p>
-      <p id="basic-verbs">
-        {#each BasicVerbs.join(' | ').split(' ') as verb}
-          {#if verb === '|'}
-            {' - '}
-          {:else}
-            <!-- svelte-ignore a11y-click-events-have-key-events -->
-            <!-- svelte-ignore a11y-no-static-element-interactions -->
-            <a
-              href="#dummy"
-              on:click|preventDefault={() => {
-                inputValue = verb
-                handleOnSubmit()
-              }}>{verb}</a
-            >
+
+      {#each Object.entries(WordCat) as [title, verbs], i}
+        <h3>{title}</h3>
+        <p>
+          {#each verbs.join(' | ').split(' ') as verb}
+            {#if verb === '|'}
+              {' - '}
+            {:else}
+              <!-- svelte-ignore a11y-click-events-have-key-events -->
+              <!-- svelte-ignore a11y-no-static-element-interactions -->
+              <a
+                href="#dummy"
+                on:click|preventDefault={() => {
+                  inputValue = verb
+                  handleOnSubmit()
+                }}>{verb}</a
+              >
+            {/if}
+          {/each}
+          {#if i === 1 && verbs.length === 0}
+            <i>Pas d'Historique encore</i>
           {/if}
-        {/each}
-      </p>
+        </p>
+      {/each}
     {/if}
   </p>
 {/if}
