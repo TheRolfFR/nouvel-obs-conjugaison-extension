@@ -5,21 +5,25 @@ on:
       - main
   pull_request:
 
-defaults:
-  run:
-    working-directory: Extension
-
 jobs:
   lint:
     name: "Lint"
     runs-on: ubuntu-latest
     steps:
-      - name: "Checkout"
-        uses: actions/checkout@v1
+      - uses: actions/checkout@v3
 
-      - name: "web-ext lint"
-        uses: kewisch/action-web-ext@v1
+      # PNPM
+      - uses: pnpm/action-setup@v2
         with:
-          cmd: lint
-          source: src
-          channel: unlisted
+          version: 8
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install
+
+      # Lint
+      - name: "Lint"
+        run: "pnpm run ext:lint"

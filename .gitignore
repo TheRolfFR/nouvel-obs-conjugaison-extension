@@ -5,8 +5,12 @@
 firefox-profile
 
 # web
+
+web-ext-artifacts/
+*.zip
+node_modules
 **/node_modules
-Extension/dist
+**/dist
 
 # safari
 **/xcdebugger

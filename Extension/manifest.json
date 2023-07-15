@@ -1,7 +1,5 @@
 {
   "manifest_version": 3,
-  "default_locale": "en",
-
   "name": "L'OBS - La conjugaison",
   "description": "Extension de conjugaison utilisant L'OBS La conjugaison",
   "version": "0.1.0",

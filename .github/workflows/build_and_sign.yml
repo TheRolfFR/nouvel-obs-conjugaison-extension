@@ -3,41 +3,54 @@ on:
   push:
     branches:
       - main
-    tags-ignore:
-      - '**'
-
-defaults:
-  run:
-    working-directory: Extension
 
 jobs:
   build:
     name: "Build"
     runs-on: ubuntu-latest
     steps:
-      - name: "Checkout"
-        uses: actions/checkout@v1
-      - name: Declare some variables
+      - uses: actions/checkout@v3
+
+      # PNPM
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Try to remove artifacts folder
+        if: ${{ env.ACT }}
+        run: rm -rf web-ext-artifacts
+        continue-on-error: true
+
+        # Build
+      - name: Get last Git SHA
+        shell: bash
+        run: echo "sha_short=$(printf "%.7s\n" "$(head=($(<.git/HEAD)); cat .git/${head[1]})")" >> "$GITHUB_ENV"
+      - name: Build
+        run: pnpm run ext:build:ci --filename "lobs_la_conjugaison-${{ env.sha_short }}.xpi"
+      - name: Get artifact name
         shell: bash
         run: |
-          echo "sha_short=$(git rev-parse --short "$GITHUB_SHA")" >> "$GITHUB_ENV"
+          target=$(cd web-ext-artifacts/ && ls *.xpi -1 | head -n1)
+          artifact=$(echo "$target" | cut -d '.' -f1)
 
-      - name: "web-ext build"
-        id: web-ext-build
-        uses: kewisch/action-web-ext@v1
-        with:
-          cmd: build
-          source: .
-          filename: "{name}-${{ env.sha_short }}.xpi"
-          ignoreFiles: '["package.json", "pnpm-lock.yaml", "./.*", "*.zip", "web-ext-artifcats", "scripts", "src", "README.md", "tsconfig.json"]'
+          echo "target=$target" >> $GITHUB_ENV
+          echo "artifact=$artifact" >> $GITHUB_ENV
 
       - name: "Upload Artifact"
         uses: actions/upload-artifact@v3
         with:
-          name: "{name}-${{ env.sha_short }}.xpi"
-          path: ${{ steps.web-ext-build.outputs.target }}
+          name: ${{ env.artifact }}
+          path: web-ext-artifacts/${{ env.target }}
+          if-no-files-found: error
   sign:
-    if: startswith(github.event.ref, 'refs/tags/')
+    if: startswith(github.event.ref, 'refs/tags/') && ${{ !github.event.act }}
     name: "Release"
     needs: build
     runs-on: ubuntu-latest

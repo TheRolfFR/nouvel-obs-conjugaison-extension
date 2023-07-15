@@ -5,8 +5,8 @@ const exec = util.promisify(require('child_process').exec);
 main();
 
 async function main() {
-  await fs.rm('./dist', { recursive: true });
-  await fs.mkdir('./dist');
+  await fs.rm('./extension/dist', { recursive: true, force: true });
+  await fs.mkdir('./extension/dist', { recursive: true });
   await exec('npm run build -- --prod');
   console.log('Done');
 }

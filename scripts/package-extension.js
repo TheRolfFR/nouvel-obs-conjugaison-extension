@@ -12,9 +12,9 @@ async function main() {
     await fs.rm(packageDir, { recursive: true });
   }
   await fs.mkdir(packageDir);
-  const zipContents = ['_locales', 'dist', 'images', 'public', 'manifest.json'];
+  const zipContents = ['dist', 'images', 'public', 'manifest.json'];
   for await (const filename of zipContents) {
-    await fs.copy(filename, `${packageDir}/${filename}`);
+    await fs.copy('extension/' + filename, `${packageDir}/${filename}`);
   }
 
   zipper.sync

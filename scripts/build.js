@@ -23,20 +23,20 @@ async function main() {
   const contentJob = build({
     ...commonConfig,
     entryPoints: ['./src/content.ts'],
-    outfile: './dist/content.js'
+    outfile: './extension/dist/content.js'
   });
 
   const backgroundJob = build({
     ...commonConfig,
     entryPoints: ['./src/background.ts'],
-    outfile: './dist/background.js'
+    outfile: './extension/dist/background.js'
   });
 
   const popupJob = build({
     ...commonConfig,
     entryPoints: ['./src/popup/popup.ts'],
     outbase: './src/popup',
-    outdir: './dist',
+    outdir: './extension/dist',
     mainFields: ['svelte', 'module', 'main', 'browser'],
     plugins: [
       sveltePlugin({
@@ -51,7 +51,7 @@ async function main() {
     ...commonConfig,
     entryPoints: ['./src/settings/settings.ts'],
     outbase: './src/settings',
-    outdir: './dist',
+    outdir: './extension/dist',
     mainFields: ['svelte', 'module', 'main', 'browser'],
     plugins: [
       sveltePlugin({
