@@ -13,6 +13,8 @@ node_modules
 **/node_modules
 **/dist
 .env
+*.crx
+*.pem
 
 # safari
 **/xcdebugger
