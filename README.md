@@ -1,4 +1,4 @@
-<img src="images/app_icon_144px.png" align="right">
+<img src="extension/images/app_icon_144px.png" align="right">
 
 # Nouvel Obs Conjugaison
 
