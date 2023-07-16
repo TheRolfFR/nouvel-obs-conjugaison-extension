@@ -37,7 +37,12 @@ jobs:
         # Build
       - name: Get last Git SHA
         shell: bash
-        run: echo "sha_short=$(printf "%.7s\n" "$(head=($(<.git/HEAD)); cat .git/${head[1]})")" >> "$GITHUB_ENV"
+        run: |
+         sha=$(head=($(<.git/HEAD)); cat .git/${head[1]})
+         sha_short=$(printf "%.7s\n" "$sha")
+
+         echo "sha=$sha" >> "$GITHUB_ENV"
+         echo "sha_short=$sha_short" >> "$GITHUB_ENV"
       - name: Build
         run: pnpm run ext:build:ci --filename "lobs_la_conjugaison-${{ env.sha_short }}.xpi"
       - name: Get artifact name
@@ -47,41 +52,93 @@ jobs:
           artifact=$(echo "$target" | cut -d '.' -f1)
 
           echo "target=$target" >> $GITHUB_ENV
-          echo "artifact=$artifact" >> $GITHUB_ENV
+          echo "artifact=$artifact" >> "$GITHUB_ENV"
+        # target is filename with extension
+        # artifact is basename without extension
 
-      - name: "Upload Artifact"
+        # Upload artifact
+      - name: "Create artifact folder"
+        if: ${{ env.ACT }}
+        shell: bash
+        run: mkdir -p /tmp/artifacts
+      - name: "Upload extension"
         uses: actions/upload-artifact@v3
         with:
           name: ${{ env.artifact }}
-          path: web-ext-artifacts/${{ env.target }}
+          path: |
+            web-ext-artifacts/${{ env.target }}
+            package.json
+            pnpm-lock.yaml
+            extension/
           if-no-files-found: error
-          retention-days: 7
+          retention-days: ${{ ( !env.ACT && 1 ) || 0 }} # 1 must be first not to be falsy
+      - name: "Get manifest"
+        id: get-manifest
+        run: |
+          content=`cat extension/manifest.json`
+          # the following lines are only required for multi line json
+          content="${content//'%'/'%25'}"
+          content="${content//$'\n'/'%0A'}"
+          content="${content//$'\r'/'%0D'}"
+          # end of optional handling for multi line json
+          echo "::set-output name=manifestJson::$content"
+      - run: |
+          echo "manifest_version=${{ fromJson(steps.get-manifest.outputs.manifestJson).version }}" >> "$GITHUB_ENV"
     outputs:
+      target: ${{ env.target }}
       artifact: ${{ env.artifact }}
+      sha: ${{ env.sha }}
+      sha_short: ${{ env.sha_short }}
+      manifest_version: ${{ env.manifest_version }}
   sign:
-    if: startswith(github.event.ref, 'refs/tags/v') && ${{ !github.event.act }}
-    name: "Release"
+    if: ${{ github.event_name == 'workflow_dispatch' }} || startswith(github.event.ref, 'refs/tags/v')
+    name: "Sign and release"
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v2
+      - run: ls -1R
+        # Download artifact
+      - name: Download artifact
+        uses: actions/download-artifact@v3
         with:
-          name: ${{needs.build.outputs.artifact}}
+          name: ${{ needs.build.outputs.artifact }}
+          path: .
+          if-no-files-found: error
 
+      - run: ls -1R
+      - run: mkdir -p signed/
+
+      # PNPM
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+      - name: Install
+        run: pnpm install web-ext
+
+        # Sign the goddamn source and download signed extension
       - name: "Sign"
-        id: web-ext-sign
-        uses: kewisch/action-web-ext@v1
-        with:
-          cmd: sign
-          source: ${{needs.build.outputs.artifact}}
-          channel: ${{ (github.event_name == 'workflow_dispatch' && 'unlisted') || 'listed' }}
-          apiKey: ${{ secrets.AMO_SIGN_KEY }}
-          apiSecret: ${{ secrets.AMO_SIGN_SECRET }}
-          timeout: 900000
+        run: >
+          pnpm run ext:sign:ci --channel ${{ (github.event_name == 'workflow_dispatch' && 'unlisted') || 'listed' }}
+          --api-key ${{ secrets.WEB_EXT_API_KEY }} --api-secret ${{ secrets.WEB_EXT_API_SECRET }}
+          --disable-progress-bar --artifacts-dir signed
 
-      - name: "Create Release"
-        uses: softprops/action-gh-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        #upload the artifact
+      - name: "Upload signed extension"
+        uses: actions/upload-artifact@v3
         with:
-          files: ${{ steps.web-ext-sign.outputs.target }}
+          name: ${{ needs.build.outputs.artifact }}
+          path: "signed/*.xpi"
+      - name: "Create Release"
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ needs.build.outputs.manifest_version }}
+          file: "signed/*.xpi"
+          file_glob: true
+          overwrite: true
+          body: "Free your hay blocks! 32x and 64x resource pack add-on"

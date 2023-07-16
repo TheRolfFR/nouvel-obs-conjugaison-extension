@@ -7,10 +7,12 @@ firefox-profile
 # web
 
 web-ext-artifacts/
+extension/.web-extension-id
 *.zip
 node_modules
 **/node_modules
 **/dist
+.env
 
 # safari
 **/xcdebugger
